@@ -18,7 +18,7 @@ Install it yourself as:
 There's a simple binary provided that will start additional torrents if neccessary to achieve the requested activity level
 
     $ transmission_chaos http://transmission:9091
-     INFO  TransmissionChaos::Client : Less than 10% active (46/502 9%), starting some more
+     INFO  TransmissionChaos::Client : Less than 10% active (46/502 | 9%), starting some more
      INFO  TransmissionChaos::Client : Adding chaos with:
     - debian-10.0.0-amd64-netinst.iso
     - Sabayon_Linux_19.03_amd64_KDE.iso
