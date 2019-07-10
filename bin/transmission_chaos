@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+require 'transmission_chaos'
+
+raise 'Usage: transmission_chaos URL [target percentage]' unless ARGV.count > 0
+
+url = ARGV[0]
+target = ARGV[1].to_f if ARGV[1]
+
+TransmissionChaos.logger.level = :info
+
+cl = TransmissionChaos::Client.new url
+cl.target_percent = target if target
+
+cl.add_chaos
