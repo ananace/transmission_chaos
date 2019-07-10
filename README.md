@@ -26,6 +26,8 @@ There's a simple binary provided that will start additional torrents if neccessa
     - Big_Buck_Bunny_1080p_surround_frostclick.com_frostwire.com
     - CentOS-7-x86_64-DVD-1810
 
+Suitably used by adding to a crontab at a wanted interval
+
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/ananace/transmission_chaos
