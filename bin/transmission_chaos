@@ -1,15 +1,36 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
+require 'optparse'
 require 'transmission_chaos'
 
-raise 'Usage: transmission_chaos URL [target percentage]' unless ARGV.count > 0
+options = {}
+OptionParser.new do |opts|
+  opts.banner = 'Usage: transmission_chaos URL [options]'
+
+  opts.on('-v', '--[no-]verbose', 'Run verbosely') do |v|
+    options[:verbose] = v
+  end
+
+  opts.on('--cron', 'Set when running as a cron task') do
+    options[:cron] = true
+  end
+
+  opts.on('-pPERC', '--percentage=PERCENT', 'Specify the target percentage of active torrents') do |perc|
+    options[:target_percent] = perc.to_i
+  end
+end.parse!
 
 url = ARGV[0]
-target = ARGV[1].to_f if ARGV[1]
 
-TransmissionChaos.logger.level = :info
+if options[:cron]
+  TransmissionChaos.logger.level = :error
+elsif options[:verbose]
+  TransmissionChaos.logger.level = :debug
+else
+  TransmissionChaos.logger.level = :info
+end
 
-cl = TransmissionChaos::Client.new url
-cl.target_percent = target if target
+cl = TransmissionChaos::Client.new url, **options
 
 cl.add_chaos
