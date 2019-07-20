@@ -36,16 +36,18 @@ module TransmissionChaos
       running_perc = running.count.to_f / torrents.count.to_f
 
       if running_perc < (target_percent / 100.0)
-        logger.info "Less than 10% active (#{running.count}/#{torrents.count} | #{(running_perc * 100).to_i}%), starting some more"
+        logger.info "Less than 10% active torrents (#{running.count}/#{torrents.count} | #{(running_perc * 100).to_i}%), starting some more;"
 
         to_start = (((target_percent / 100.0) - running_perc) * torrents.count).ceil
         to_start = ready_for_more.sample(to_start)
 
-        logger.info "Adding chaos with:\n- #{to_start.map(&:name).join("\n- ")}"
+        to_start.each do |torrent|
+          logger.info "Starting #{torrent.name}"
+        end
 
         rpc_call('torrent-start', ids: to_start.map(&:id))
       else
-        logger.info "Transmission currently in chaos. (#{running.count}/#{torrents.count} | #{(running_perc * 100).to_i}% active)"
+        logger.info "Transmission currently in chaos. #{running.count}/#{torrents.count} active (#{(running_perc * 100).to_i}%)"
       end
     end
 
