@@ -5,7 +5,7 @@ require 'optparse'
 require 'transmission_chaos'
 
 options = {}
-OptionParser.new do |opts|
+oparse = OptionParser.new do |opts|
   opts.banner = 'Usage: transmission_chaos URL [options]'
 
   opts.on('-v', '--[no-]verbose', 'Run verbosely') do |v|
@@ -23,9 +23,19 @@ OptionParser.new do |opts|
   opts.on('-pPERC', '--percentage=PERCENT', 'Specify the target percentage of active torrents') do |perc|
     options[:target_percent] = perc.to_i
   end
-end.parse!
+
+  opts.on('-h', '--help', 'Prints this help') do
+    puts opts
+    exit
+  end
+end
+oparse.parse!
 
 url = ARGV[0]
+if url.nil? || url.empty?
+  puts oparse
+  exit
+end
 
 if options[:cron]
   TransmissionChaos.logger.level = :error
