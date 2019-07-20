@@ -38,7 +38,8 @@ module TransmissionChaos
       if running_perc < (target_percent / 100.0)
         logger.info "Less than 10% active (#{running.count}/#{torrents.count} | #{(running_perc * 100).to_i}%), starting some more"
 
-        to_start = ready_for_more.sample(5)
+        to_start = (((target_percent / 100.0) - running_perc) * torrents.count).ceil
+        to_start = ready_for_more.sample(to_start)
 
         logger.info "Adding chaos with:\n- #{to_start.map(&:name).join("\n- ")}"
 
