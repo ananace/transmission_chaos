@@ -16,6 +16,10 @@ OptionParser.new do |opts|
     options[:cron] = true
   end
 
+  opts.on('--daemon', 'Run as a foreground daemon') do
+    options[:daemon] = true
+  end
+
   opts.on('-pPERC', '--percentage=PERCENT', 'Specify the target percentage of active torrents') do |perc|
     options[:target_percent] = perc.to_i
   end
@@ -33,4 +37,21 @@ end
 
 cl = TransmissionChaos::Client.new url, **options
 
-cl.add_chaos
+if !options[:daemon]
+  cl.add_chaos
+else
+  cl.logger.info 'Starting Transmission Chaos keeper daemon'
+  begin
+    loop do
+      begin
+        cl.add_chaos
+      rescue StandardError => e
+        cl.logger.error e
+      end
+
+      sleep TransmissionChaos::Client::UPDATE_INTERVAL
+    end
+  rescue Interrupt
+    cl.logger.info 'Interrupt received, stopping.'
+  end
+end
