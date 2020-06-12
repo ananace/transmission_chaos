@@ -7,9 +7,9 @@ module TransmissionChaos
   class Client
     UPDATE_INTERVAL = 30
 
-    attr_accessor :url, :validate_certificate, :proxy_uri, :read_timeout, :target_percent
+    attr_accessor :url, :validate_certificate, :proxy_uri, :read_timeout, :target_percent, :target_number
 
-    def initialize(url, target_percent: 10, **params)
+    def initialize(url, target_percent: nil, target_number: nil, **params)
       url = URI.parse(url) unless url.is_a? URI
 
       @url = url
@@ -18,7 +18,11 @@ module TransmissionChaos
       @validate_certificate = params[:validate_certificate]
       @proxy_uri = params[:proxy_uri]
       @read_timeout = params.fetch(:read_timeout, 30)
-      @target_percent = target_percent.to_f
+      @target_percent = target_percent.to_f if target_percent
+      @target_number = target_number.to_i if target_number
+
+      raise ArgumentError, 'Either target percentage or number must be specified' unless target_percent || target_number
+      logger.info 'Both target number and percentage given, acting on percentage' if target_percent && target_number
 
       @torrents_updated = Time.new(0)
     end
@@ -33,21 +37,36 @@ module TransmissionChaos
 
       return unless ready_for_more.any?
 
-      running_perc = running.count.to_f / torrents.count.to_f
+      if target_percent
+        running_perc = running.count.to_f / torrents.count.to_f
 
-      if running_perc < (target_percent / 100.0)
-        logger.info "Less than 10% active torrents (#{running.count}/#{torrents.count} | #{(running_perc * 100).to_i}%), starting some more;"
+        if running_perc < (target_percent / 100.0)
+          logger.info "Less than #{target_percent}% active torrents (#{running.count}/#{torrents.count} | #{(running_perc * 100).to_i}%), starting some more;"
 
-        to_start = (((target_percent / 100.0) - running_perc) * torrents.count).ceil
-        to_start = ready_for_more.sample(to_start)
+          to_start = (((target_percent / 100.0) - running_perc) * torrents.count).ceil
+          to_start = ready_for_more.sample(to_start)
 
-        to_start.each do |torrent|
-          logger.info "Starting #{torrent.name}"
+          to_start.each do |torrent|
+            logger.info "Starting #{torrent.name}"
+          end
+
+          rpc_call('torrent-start', ids: to_start.map(&:id))
+        else
+          logger.info "Transmission currently in chaos. #{running.count}/#{torrents.count} active (#{(running_perc * 100).to_i}%)"
         end
+      elsif target_number
+        if running.count < target_number
+          logger.info "Less than #{target_number} active torrents (#{running.count}/#{torrents.count}), starting some more;"
+          to_start = ready_for_more.sample(target_number - running.count)
 
-        rpc_call('torrent-start', ids: to_start.map(&:id))
-      else
-        logger.info "Transmission currently in chaos. #{running.count}/#{torrents.count} active (#{(running_perc * 100).to_i}%)"
+          to_start.each do |torrent|
+            logger.info "Starting #{torrent.name}"
+          end
+
+          rpc_call('torrent-start', ids: to_start.map(&:id))
+        else
+          logger.info "Transmission currently in chaos. #{running.count}/#{torrents.count} active."
+        end
       end
     end
 

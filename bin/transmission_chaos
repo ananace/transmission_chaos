@@ -21,7 +21,11 @@ oparse = OptionParser.new do |opts|
   end
 
   opts.on('-pPERC', '--percentage=PERCENT', 'Specify the target percentage of active torrents') do |perc|
-    options[:target_percent] = perc.to_i
+    options[:target_percent] = perc.to_f
+  end
+
+  opts.on('-tTORR', '--torrents=TORRENTS', 'Specify the exact target number of active torrents') do |torr|
+    options[:target_number] = torr.to_i
   end
 
   opts.on('-h', '--help', 'Prints this help') do
