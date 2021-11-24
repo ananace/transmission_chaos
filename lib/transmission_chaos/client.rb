@@ -20,6 +20,7 @@ module TransmissionChaos
       @read_timeout = params.fetch(:read_timeout, 30)
       @target_percent = target_percent.to_f if target_percent
       @target_number = target_number.to_i if target_number
+      @ignore_downloading = params.fetch(:ignore_downloading, false)
 
       raise ArgumentError, 'Either target percentage or number must be specified' unless target_percent || target_number
       logger.info 'Both target number and percentage given, acting on percentage' if target_percent && target_number
@@ -32,7 +33,8 @@ module TransmissionChaos
     end
 
     def add_chaos
-      running = torrents.select(&:active?)
+      filter = @ignore_downloading ? :seeding? : :active?
+      running = torrents.select(&filter)
       ready_for_more = torrents.select { |t| t.stopped? && !t.errored? }
 
       return unless ready_for_more.any?

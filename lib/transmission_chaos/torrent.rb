@@ -26,6 +26,10 @@ module TransmissionChaos
       [4, 6].include? @status
     end
 
+    def seeding?
+      @status == 6
+    end
+
     def status
       STATUS_MAPPING[@status]
     end

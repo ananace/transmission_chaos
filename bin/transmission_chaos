@@ -20,6 +20,10 @@ oparse = OptionParser.new do |opts|
     options[:daemon] = true
   end
 
+  opts.on('--ignore-downloading', 'Ignore active torrents that are still downloading') do
+    options[:ignore_downloading] = true
+  end
+
   opts.on('-pPERC', '--percentage=PERCENT', 'Specify the target percentage of active torrents') do |perc|
     options[:target_percent] = perc.to_f
   end
