@@ -39,6 +39,7 @@ module TransmissionChaos
 
       return unless ready_for_more.any?
 
+      to_start = 0
       if target_percent
         running_perc = running.count.to_f / torrents.count.to_f
 
@@ -46,37 +47,37 @@ module TransmissionChaos
           logger.info "Less than #{target_percent}% active torrents (#{running.count}/#{torrents.count} | #{(running_perc * 100).to_i}%), starting some more;"
 
           to_start = (((target_percent / 100.0) - running_perc) * torrents.count).ceil
-          to_start = ready_for_more.sample(to_start)
-
-          to_start.each do |torrent|
-            logger.info "Starting #{torrent.name}"
-          end
-
-          rpc_call('torrent-start', ids: to_start.map(&:id))
         else
           logger.info "Transmission currently in chaos. #{running.count}/#{torrents.count} active (#{(running_perc * 100).to_i}%)"
         end
       elsif target_number
         if running.count < target_number
           logger.info "Less than #{target_number} active torrents (#{running.count}/#{torrents.count}), starting some more;"
-          to_start = ready_for_more.sample(target_number - running.count)
-
-          to_start.each do |torrent|
-            logger.info "Starting #{torrent.name}"
-          end
-
-          rpc_call('torrent-start', ids: to_start.map(&:id))
+          to_start = target_number - running.count
         else
           logger.info "Transmission currently in chaos. #{running.count}/#{torrents.count} active."
         end
       end
+
+      return if to_start.zero?
+
+      weights = ready_for_more.inject([]) { |array, torrent| array << [torrent, torrent.seed_weight + (array.last.last rescue 0)] }
+      torrents = to_start.times.map do
+        value = rand(weights.last.last)
+        torrent = weights.find { |_, weight| value < weight }.first
+        logger.info "Starting #{torrent.name}" unless logger.debug?
+        logger.debug "Starting #{torrent.name} (#{torrent.inspect} / #{torrent.seed_weight})"
+        torrent
+      end
+
+      rpc_call('torrent-start', ids: torrents.map(&:id))
     end
 
     def torrents
       @torrents = nil if Time.now - @torrents_updated > UPDATE_INTERVAL
 
       @torrents ||= begin
-        data = rpc_call('torrent-get', fields: %i[id error name status])
+        data = rpc_call('torrent-get', fields: %i[id error name status doneDate secondsSeeding uploadRatio])
         @torrents_updated = Time.now
         data[:torrents].map { |t| Torrent.new(**t) }
       end
