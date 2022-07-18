@@ -65,6 +65,8 @@ module TransmissionChaos
       torrents = to_start.times.map do
         value = rand(weights.last.last)
         torrent = weights.find { |_, weight| value < weight }.first
+        weights.delete torrent
+
         logger.info "Starting #{torrent.name}" unless logger.debug?
         logger.debug "Starting #{torrent.name} (#{torrent.inspect} / #{torrent.seed_weight})"
         torrent
