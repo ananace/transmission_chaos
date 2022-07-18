@@ -50,9 +50,7 @@ module TransmissionChaos
       end
 
       want_seed_time = 14 * 24 * 60 * 60
-      if @seconds_seeding && @seconds_seeding < want_seed_time
-        weight += (want_seed_time - @seconds_seeding) / 1_000
-      end
+      weight += (want_seed_time - @seconds_seeding) / 1_000 if @seconds_seeding && @seconds_seeding < want_seed_time
 
       if @upload_ratio
         weight += if @upload_ratio < 2

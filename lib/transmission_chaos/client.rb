@@ -23,6 +23,7 @@ module TransmissionChaos
       @ignore_downloading = params.fetch(:ignore_downloading, false)
 
       raise ArgumentError, 'Either target percentage or number must be specified' unless target_percent || target_number
+
       logger.info 'Both target number and percentage given, acting on percentage' if target_percent && target_number
 
       @torrents_updated = Time.new(0)
@@ -41,7 +42,7 @@ module TransmissionChaos
 
       to_start = 0
       if target_percent
-        running_perc = running.count.to_f / torrents.count.to_f
+        running_perc = running.count / torrents.count.to_f
 
         if running_perc < (target_percent / 100.0)
           logger.info "Less than #{target_percent}% active torrents (#{running.count}/#{torrents.count} | #{(running_perc * 100).to_i}%), starting some more;"
@@ -130,7 +131,7 @@ module TransmissionChaos
       end
       logger.debug dir
       clean_body = JSON.parse(http.body) rescue nil if http.body
-      clean_body.keys.each { |k| clean_body[k] = '[ REDACTED ]' if %w[password access_token].include?(k) }.to_json if clean_body
+      clean_body.each_key { |k| clean_body[k] = '[ REDACTED ]' if %w[password access_token].include?(k) }.to_json if clean_body
       logger.debug "#{dir} #{clean_body.length < 200 ? clean_body : clean_body.slice(0..200) + "... [truncated, #{clean_body.length} Bytes]"}" if clean_body
     rescue StandardError => e
       logger.warn "#{e.class} occured while printing request debug; #{e.message}\n#{e.backtrace.join "\n"}"

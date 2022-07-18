@@ -45,13 +45,13 @@ if url.nil? || url.empty?
   exit
 end
 
-if options[:cron]
-  TransmissionChaos.logger.level = :error
-elsif options[:verbose]
-  TransmissionChaos.logger.level = :debug
-else
-  TransmissionChaos.logger.level = :info
-end
+TransmissionChaos.logger.level = if options[:cron]
+                                   :error
+                                 elsif options[:verbose]
+                                   :debug
+                                 else
+                                   :info
+                                 end
 
 cl = TransmissionChaos::Client.new url, **options
 
