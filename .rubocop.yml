@@ -1,8 +1,9 @@
 AllCops:
-  TargetRubyVersion: 2.4
+  TargetRubyVersion: 2.6
   Exclude:
     - '*.spec'
     - 'Rakefile'
+  NewCops: enable
 
 Style/ClassAndModuleChildren:
   Enabled: false
@@ -17,7 +18,7 @@ Metrics/ClassLength:
 Metrics/MethodLength:
   Max: 50
 
-Metrics/LineLength:
+Layout/LineLength:
   Max: 190
 
 Style/RescueModifier:

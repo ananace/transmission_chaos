@@ -55,9 +55,7 @@ TransmissionChaos.logger.level = if options[:cron]
 
 cl = TransmissionChaos::Client.new url, **options
 
-if !options[:daemon]
-  cl.add_chaos
-else
+if options[:daemon]
   cl.logger.info 'Starting Transmission Chaos keeper daemon'
   begin
     loop do
@@ -72,4 +70,6 @@ else
   rescue Interrupt
     cl.logger.info 'Interrupt received, stopping.'
   end
+else
+  cl.add_chaos
 end

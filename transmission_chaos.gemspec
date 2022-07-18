@@ -13,6 +13,8 @@ Gem::Specification.new do |spec|
   spec.homepage      = 'https://github.com/ananace/transmission_chaos'
   spec.license       = 'MIT'
 
+  spec.required_ruby_version = '>= 2.6.0'
+
   spec.extra_rdoc_files = %w[README.md LICENSE.txt]
   spec.files            = Dir['{bin,lib}/**/*'] + spec.extra_rdoc_files
   spec.executables      = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
@@ -20,5 +22,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'logging'
 
   spec.add_development_dependency 'bundler'
+  spec.add_development_dependency 'minitest'
   spec.add_development_dependency 'rake'
 end
