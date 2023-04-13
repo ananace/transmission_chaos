@@ -1,12 +1,12 @@
-FROM ruby
+FROM ruby:alpine
 
-COPY Gemfile transmission_chaos.gemspec /app/
-COPY bin/ /app/bin/
-COPY lib/ /app/lib/
 WORKDIR /app
+COPY Gemfile *.gemspec /app/
+COPY bin /app/bin/
+COPY lib /app/lib/
 
-RUN bundle install -j4 \
- && echo "#!/bin/sh\ncd /app\nexec bundle exec bin/transmission_chaos \"\$@\"" > /usr/local/bin/transmission_chaos \
- && chmod +x /usr/local/bin/transmission_chaos
+RUN bundle config set --local path 'vendor' \
+ && bundle config set --local without 'development' \
+ && bundle install
 
-ENTRYPOINT [ "/usr/local/bin/transmission_chaos" ]
+ENTRYPOINT [ "/usr/local/bin/bundle", "exec", "bin/transmission_chaos" ]
