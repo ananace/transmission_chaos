@@ -1,13 +1,12 @@
 # frozen_string_literal: true
 
-require 'transmission_chaos/client'
-require 'transmission_chaos/torrent'
-require 'transmission_chaos/version'
-
-autoload :Logging, 'logging'
+require 'logging'
+require_relative 'transmission_chaos/version'
 
 module TransmissionChaos
   class Error < StandardError; end
+
+  autoload :Client, 'transmission_chaos/client'
 
   def self.debug!
     logger.level = :debug

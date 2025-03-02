@@ -2,6 +2,7 @@
 
 require 'json'
 require 'net/http'
+require_relative 'torrent'
 
 module TransmissionChaos
   class Client
